@@ -1,0 +1,54 @@
+.checkout-entry {
+  text-align: center;
+  max-width: 900px;
+}
+
+.checkout-entry-sub {
+  max-width: 560px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.checkout-entry-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin: 40px 0 24px;
+  text-align: left;
+}
+
+.checkout-entry-card {
+  padding: 32px;
+}
+
+.checkout-entry-card h2 {
+  font-size: 1.2rem;
+}
+
+.checkout-entry-card .btn {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.checkout-entry-contact {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.checkout-entry-guest {
+  background: none;
+  border: none;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.checkout-entry-guest:hover {
+  color: var(--color-primary);
+}
+
+@media (max-width: 700px) {
+  .checkout-entry-cards {
+    grid-template-columns: 1fr;
+  }
+}

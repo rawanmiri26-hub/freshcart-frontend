@@ -1,0 +1,36 @@
+.shop-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.shop-search {
+  padding: 12px 18px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  font-size: 0.95rem;
+  max-width: 360px;
+  background: var(--color-surface);
+}
+
+.shop-search:focus {
+  border-color: var(--color-accent);
+  outline: none;
+}
+
+.shop-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.category-pill-active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+.category-pill-active:hover {
+  color: #fff;
+}
