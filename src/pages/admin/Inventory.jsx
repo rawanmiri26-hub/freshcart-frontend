@@ -3,7 +3,7 @@ import { api } from '../../api/client';
 import { useAuth } from '../../context/AuthContext';
 import './AdminTable.css';
 
-const emptyForm = { name: '', category_id: '', price: '', description: '', in_stock: true };
+const emptyForm = { name: '', category_id: '', price: '', description: '', in_stock: true, image_url: '' };
 
 export default function Inventory() {
   const { user } = useAuth();
@@ -12,6 +12,7 @@ export default function Inventory() {
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [existingMediaIds, setExistingMediaIds] = useState([]);
   const [form, setForm] = useState(emptyForm);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -31,22 +32,42 @@ export default function Inventory() {
 
   const openAdd = () => {
     setEditingId(null);
+    setExistingMediaIds([]);
     setForm(emptyForm);
     setError('');
     setModalOpen(true);
   };
 
-  const openEdit = (product) => {
+  const openEdit = async (product) => {
     setEditingId(product.id);
-    setForm({
-      name: product.name,
-      category_id: product.category_id,
-      price: product.price,
-      description: product.description || '',
-      in_stock: !!product.in_stock,
-    });
     setError('');
     setModalOpen(true);
+    // The list endpoint includes media too, but re-fetch the single product
+    // to be safe/current, and to get media ids we'd need for replacing it.
+    try {
+      const res = await api.get(`/api/products/${product.id}`);
+      const detail = res.data;
+      setExistingMediaIds((detail.media || []).map((m) => m.id));
+      setForm({
+        name: detail.name,
+        category_id: detail.category_id,
+        price: detail.price,
+        description: detail.description || '',
+        in_stock: !!detail.in_stock,
+        image_url: detail.media?.[0]?.url || '',
+      });
+    } catch {
+      // Fall back to the row data we already had if the detail fetch fails.
+      setExistingMediaIds((product.media || []).map((m) => m.id));
+      setForm({
+        name: product.name,
+        category_id: product.category_id,
+        price: product.price,
+        description: product.description || '',
+        in_stock: !!product.in_stock,
+        image_url: product.media?.[0]?.url || '',
+      });
+    }
   };
 
   const handleChange = (e) => {
@@ -67,11 +88,24 @@ export default function Inventory() {
       in_stock: form.in_stock,
     };
     try {
+      let productId = editingId;
       if (editingId) {
         await api.put(`/api/products/${editingId}`, payload, { auth: true });
       } else {
-        await api.post('/api/products', payload, { auth: true });
+        const created = await api.post('/api/products', payload, { auth: true });
+        productId = created.data.id;
       }
+
+      // Replace the image: remove any old media rows, add the new URL if provided.
+      await Promise.all(existingMediaIds.map((id) => api.delete(`/api/product-media/${id}`, { auth: true })));
+      if (form.image_url.trim()) {
+        await api.post(
+          '/api/product-media',
+          { product_id: productId, url: form.image_url.trim(), type: 'image' },
+          { auth: true }
+        );
+      }
+
       setModalOpen(false);
       loadData();
     } catch (err) {
@@ -112,6 +146,7 @@ export default function Inventory() {
           <table className="admin-table">
             <thead>
               <tr>
+                <th>Image</th>
                 <th>Product</th>
                 <th>Category</th>
                 <th>Price</th>
@@ -122,6 +157,17 @@ export default function Inventory() {
             <tbody>
               {products.map((p) => (
                 <tr key={p.id}>
+                  <td>
+                    {p.media?.[0]?.url ? (
+                      <img
+                        src={p.media[0].url}
+                        alt={p.name}
+                        style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 8 }}
+                      />
+                    ) : (
+                      <span style={{ opacity: 0.4 }}>—</span>
+                    )}
+                  </td>
                   <td>{p.name}</td>
                   <td>{p.category_name || '—'}</td>
                   <td>${Number(p.price).toFixed(2)}</td>
@@ -193,6 +239,26 @@ export default function Inventory() {
                 value={form.price}
                 onChange={handleChange}
               />
+            </div>
+
+            <div className="form-field">
+              <label htmlFor="image_url">Image URL</label>
+              <input
+                id="image_url"
+                name="image_url"
+                type="url"
+                placeholder="https://example.com/photo.jpg"
+                value={form.image_url}
+                onChange={handleChange}
+              />
+              {form.image_url && (
+                <img
+                  src={form.image_url}
+                  alt="Preview"
+                  style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 8, marginTop: 8 }}
+                  onError={(e) => (e.target.style.display = 'none')}
+                />
+              )}
             </div>
 
             <div className="form-field">
