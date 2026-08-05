@@ -21,6 +21,7 @@ export default function AdminLayout() {
           {isAdmin && <NavLink to="/store/dashboard">📊 Dashboard</NavLink>}
           <NavLink to="/store/inventory">📦 Inventory</NavLink>
           {isAdmin && <NavLink to="/store/orders">🛒 Orders</NavLink>}
+          {isAdmin && <NavLink to="/store/call-center">📞 Call Center</NavLink>}
           {isOwner && <NavLink to="/store/members">👥 Members</NavLink>}
         </nav>
         <div className="admin-user-box">

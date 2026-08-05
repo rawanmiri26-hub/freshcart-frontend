@@ -16,6 +16,7 @@ import StoreLogin from './pages/admin/StoreLogin';
 import Dashboard from './pages/admin/Dashboard';
 import Inventory from './pages/admin/Inventory';
 import AdminOrders from './pages/admin/AdminOrders';
+import CallCenter from './pages/admin/CallCenter';
 import Members from './pages/admin/Members';
 import AdminLayout from './pages/admin/AdminLayout';
 
@@ -59,6 +60,14 @@ export default function App() {
           element={
             <ProtectedRoute requireAdmin>
               <AdminOrders />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="call-center"
+          element={
+            <ProtectedRoute requireAdmin>
+              <CallCenter />
             </ProtectedRoute>
           }
         />
