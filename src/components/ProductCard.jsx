@@ -22,6 +22,9 @@ export default function ProductCard({ product }) {
           <span className="tag tag-fresh product-card-category">{product.category_name}</span>
         )}
         <h3 className="product-card-name">{product.name}</h3>
+        {product.description && (
+          <p className="product-card-description">{product.description}</p>
+        )}
         <div className="product-card-footer">
           <span className="product-card-price">${Number(product.price).toFixed(2)}</span>
           <button

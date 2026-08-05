@@ -7,6 +7,10 @@ export default function AdminOrders() {
   const [statuses, setStatuses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
+  const [adjustOrder, setAdjustOrder] = useState(null); // the order object currently being adjusted
+  const [adjustForm, setAdjustForm] = useState({ delivery_fee: '', discount: '' });
+  const [adjustError, setAdjustError] = useState('');
+  const [adjustSaving, setAdjustSaving] = useState(false);
 
   const loadData = () => {
     setLoading(true);
@@ -49,10 +53,37 @@ export default function AdminOrders() {
     }
   };
 
+  const openAdjust = (order) => {
+    setAdjustOrder(order);
+    setAdjustForm({ delivery_fee: order.delivery_fee, discount: order.discount });
+    setAdjustError('');
+  };
+
+  const handleAdjustSave = async (e) => {
+    e.preventDefault();
+    setAdjustSaving(true);
+    setAdjustError('');
+    try {
+      const res = await api.put(
+        `/api/orders/${adjustOrder.id}/adjust`,
+        { delivery_fee: Number(adjustForm.delivery_fee), discount: Number(adjustForm.discount) },
+        { auth: true }
+      );
+      setOrders((prev) =>
+        prev.map((o) => (o.id === adjustOrder.id ? { ...o, ...res.data } : o))
+      );
+      setAdjustOrder(null);
+    } catch (err) {
+      setAdjustError(err.message);
+    } finally {
+      setAdjustSaving(false);
+    }
+  };
+
   return (
     <div>
       <h1 className="page-title">Order management</h1>
-      <p className="page-subtitle">Review and update order status.</p>
+      <p className="page-subtitle">Review status, and adjust delivery fee or discount per order.</p>
 
       <div className="card admin-table-card">
         {loading ? (
@@ -66,6 +97,8 @@ export default function AdminOrders() {
                 <th>Order</th>
                 <th>Phone</th>
                 <th>Address</th>
+                <th>Delivery fee</th>
+                <th>Discount</th>
                 <th>Total</th>
                 <th>Status</th>
                 <th>Actions</th>
@@ -77,6 +110,8 @@ export default function AdminOrders() {
                   <td>#{o.id}</td>
                   <td>{o.contact_phone}</td>
                   <td>{o.delivery_address}</td>
+                  <td>${Number(o.delivery_fee).toFixed(2)}</td>
+                  <td>${Number(o.discount).toFixed(2)}</td>
                   <td>${Number(o.total_amount).toFixed(2)}</td>
                   <td>
                     <select
@@ -92,9 +127,14 @@ export default function AdminOrders() {
                     </select>
                   </td>
                   <td>
-                    <button className="icon-btn danger" onClick={() => handleDelete(o.id)}>
-                      Delete
-                    </button>
+                    <div className="admin-table-actions">
+                      <button className="icon-btn" onClick={() => openAdjust(o)}>
+                        Adjust
+                      </button>
+                      <button className="icon-btn danger" onClick={() => handleDelete(o.id)}>
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -102,6 +142,59 @@ export default function AdminOrders() {
           </table>
         )}
       </div>
+
+      {adjustOrder && (
+        <div className="admin-form-modal-backdrop" onClick={() => setAdjustOrder(null)}>
+          <form
+            className="admin-form-modal"
+            onClick={(e) => e.stopPropagation()}
+            onSubmit={handleAdjustSave}
+          >
+            <h2>Adjust order #{adjustOrder.id}</h2>
+
+            {adjustError && <p className="error-text">{adjustError}</p>}
+
+            <div className="form-field">
+              <label htmlFor="delivery_fee">Delivery fee ($)</label>
+              <input
+                id="delivery_fee"
+                type="number"
+                step="0.01"
+                min="0"
+                required
+                value={adjustForm.delivery_fee}
+                onChange={(e) => setAdjustForm({ ...adjustForm, delivery_fee: e.target.value })}
+              />
+            </div>
+
+            <div className="form-field">
+              <label htmlFor="discount">Discount ($)</label>
+              <input
+                id="discount"
+                type="number"
+                step="0.01"
+                min="0"
+                required
+                value={adjustForm.discount}
+                onChange={(e) => setAdjustForm({ ...adjustForm, discount: e.target.value })}
+              />
+            </div>
+
+            <p className="page-subtitle">
+              The order total will be recalculated automatically based on these values.
+            </p>
+
+            <div className="admin-form-modal-actions">
+              <button type="button" className="btn btn-outline" onClick={() => setAdjustOrder(null)}>
+                Cancel
+              </button>
+              <button type="submit" className="btn btn-primary" disabled={adjustSaving}>
+                {adjustSaving ? 'Saving…' : 'Save'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 }
