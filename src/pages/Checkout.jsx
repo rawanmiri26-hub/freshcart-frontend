@@ -20,6 +20,7 @@ export default function Checkout() {
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [showCallPopup, setShowCallPopup] = useState(false);
 
   useEffect(() => {
     api
@@ -34,6 +35,7 @@ export default function Checkout() {
   const total = subtotal + DELIVERY_FEE;
   const selectedMethodObj = paymentMethods.find((m) => m.id === selectedMethod);
   const isWhish = selectedMethodObj?.name.toLowerCase().includes('whish');
+  const isCallConfirm = selectedMethodObj?.name.toLowerCase().includes('call');
 
   const handleConfirm = async (e) => {
     e.preventDefault();
@@ -46,6 +48,14 @@ export default function Checkout() {
     if (isWhish && !whishAccount.trim()) {
       setError('Please enter your Whish Money account number.');
       return;
+    }
+
+    // Simulate the "we're calling the store to confirm" moment before
+    // actually placing the order, matching the storyboard's phone-based flow.
+    if (isCallConfirm) {
+      setShowCallPopup(true);
+      await new Promise((resolve) => setTimeout(resolve, 2200));
+      setShowCallPopup(false);
     }
 
     setSubmitting(true);
@@ -122,6 +132,16 @@ export default function Checkout() {
 
   return (
     <div className="container section">
+      {showCallPopup && (
+        <div className="admin-form-modal-backdrop">
+          <div className="admin-form-modal checkout-call-popup">
+            <div className="checkout-call-spinner" aria-hidden="true">📞</div>
+            <h2>Calling FreshCart to confirm your order…</h2>
+            <p className="page-subtitle">One of our team members is confirming your order details.</p>
+          </div>
+        </div>
+      )}
+
       <Link to="/cart" className="checkout-back">← Back to cart</Link>
       <h1 className="page-title">Checkout</h1>
 

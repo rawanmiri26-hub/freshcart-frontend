@@ -21,6 +21,14 @@ export default function ContactUs() {
             <h3>Customer support</h3>
             <p>Phone support: +961 1 888 888</p>
             <p>Direct call: +961 81 001 001</p>
+            <a
+              href="https://wa.me/96181001001?text=Hi%20FreshCart%2C%20I%20have%20a%20question%20about%20my%20order."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-primary contact-whatsapp-btn"
+            >
+              💬 Chat on WhatsApp
+            </a>
           </div>
         </div>
 
