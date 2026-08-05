@@ -1,10 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useCart } from '../context/CartContext';
+import { api } from '../api/client';
 import './AiPlanner.css';
 
-// Note: there's no AI planning endpoint on the backend yet, so this page
-// uses a representative sample plan client-side. Swap WEEK_PLAN and
-// MARKET_LIST for real API data once a planner endpoint exists.
+// Note: there's no AI planning endpoint on the backend yet, so the weekly
+// meal plan itself is a representative sample, shown client-side. However,
+// "add all to cart" matches each market-list item against your real product
+// catalog by name — so it only adds items with real, valid product ids
+// (never fake ones), and tells you which items aren't in stock to match.
 const WEEK_PLAN = [
   {
     day: 'Monday',
@@ -43,17 +46,37 @@ export default function AiPlanner() {
   const [activeDay, setActiveDay] = useState(0);
   const [checked, setChecked] = useState({});
   const [added, setAdded] = useState(false);
+  const [unmatched, setUnmatched] = useState([]);
+  const [catalog, setCatalog] = useState([]);
+
+  useEffect(() => {
+    api
+      .get('/api/products')
+      .then((res) => setCatalog(res.data))
+      .catch(() => setCatalog([]));
+  }, []);
 
   const toggleItem = (name) => setChecked((prev) => ({ ...prev, [name]: !prev[name] }));
 
   const addAllToCart = () => {
-    // Market list items aren't tied to real product ids in this mock plan,
-    // so we add them as flat cart entries priced at a placeholder rate.
+    // Market list items are plan suggestions, not guaranteed to exist in the
+    // real catalog — match by name against real products (which have real,
+    // valid ids the backend will accept) instead of inventing fake ones.
+    const missing = [];
     MARKET_LIST.forEach((section) => {
       section.items.forEach((item) => {
-        addItem({ id: `planner-${item.name}`, name: item.name, price: 3.99 }, 1);
+        const match = catalog.find((p) =>
+          p.name.toLowerCase().includes(item.name.toLowerCase()) ||
+          item.name.toLowerCase().includes(p.name.toLowerCase())
+        );
+        if (match) {
+          addItem(match, 1);
+        } else {
+          missing.push(item.name);
+        }
       });
     });
+    setUnmatched(missing);
     setAdded(true);
   };
 
@@ -132,6 +155,11 @@ export default function AiPlanner() {
           <button className="btn btn-primary planner-add-all" onClick={addAllToCart}>
             {added ? 'Added to cart ✓' : 'One-click add all to cart'}
           </button>
+          {added && unmatched.length > 0 && (
+            <p className="error-text" style={{ marginTop: 12 }}>
+              Not currently in stock, so skipped: {unmatched.join(', ')}
+            </p>
+          )}
         </aside>
       </div>
     </div>
