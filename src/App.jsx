@@ -65,7 +65,7 @@ export default function App() {
         <Route
           path="members"
           element={
-            <ProtectedRoute requireAdmin>
+            <ProtectedRoute requireOwner>
               <Members />
             </ProtectedRoute>
           }

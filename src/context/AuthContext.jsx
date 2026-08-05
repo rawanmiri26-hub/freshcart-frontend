@@ -42,11 +42,12 @@ export function AuthProvider({ children }) {
 
   // Matches backend config/roles.js:
   // role_id 1 = Admin, 2 = Store Manager, 3 = Employee, 4 = Customer
-  const isAdmin = user && [1, 2].includes(user.role_id); // full store access
+  const isOwner = user && user.role_id === 1; // Admin only — Members management
+  const isAdmin = user && [1, 2].includes(user.role_id); // Admin + Store Manager — Dashboard/Orders
   const isStoreStaff = user && [1, 2, 3].includes(user.role_id); // can enter store panel (Inventory only, if Employee)
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, logout, isAdmin, isStoreStaff }}>
+    <AuthContext.Provider value={{ user, loading, login, signup, logout, isOwner, isAdmin, isStoreStaff }}>
       {children}
     </AuthContext.Provider>
   );

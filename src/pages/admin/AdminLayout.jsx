@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import './AdminLayout.css';
 
 export default function AdminLayout() {
-  const { user, logout, isAdmin } = useAuth();
+  const { user, logout, isAdmin, isOwner } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -21,7 +21,7 @@ export default function AdminLayout() {
           {isAdmin && <NavLink to="/store/dashboard">📊 Dashboard</NavLink>}
           <NavLink to="/store/inventory">📦 Inventory</NavLink>
           {isAdmin && <NavLink to="/store/orders">🛒 Orders</NavLink>}
-          {isAdmin && <NavLink to="/store/members">👥 Members</NavLink>}
+          {isOwner && <NavLink to="/store/members">👥 Members</NavLink>}
         </nav>
         <div className="admin-user-box">
           <div>
