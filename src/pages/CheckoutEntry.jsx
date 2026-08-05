@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './CheckoutEntry.css';
 
@@ -11,10 +11,11 @@ export default function CheckoutEntry() {
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  // Already logged in — skip straight to checkout.
+  // Already logged in — skip straight to checkout. Using <Navigate> (a
+  // declarative redirect) instead of calling navigate() during render,
+  // which React doesn't reliably support and caused intermittent blank pages.
   if (user) {
-    navigate('/checkout');
-    return null;
+    return <Navigate to="/checkout" replace />;
   }
 
   const handleLogin = async (e) => {
