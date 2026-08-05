@@ -18,11 +18,13 @@ export default function StoreLogin() {
     setSubmitting(true);
     try {
       const user = await login(form.email, form.password);
-      if (![1, 2].includes(user.role_id)) {
+      if (![1, 2, 3].includes(user.role_id)) {
         setError('This account does not have store access.');
         return;
       }
-      navigate('/store/dashboard');
+      // Admins/Store Managers land on the full Dashboard; Employees only
+      // have Inventory access, so send them straight there.
+      navigate([1, 2].includes(user.role_id) ? '/store/dashboard' : '/store/inventory');
     } catch (err) {
       setError(err.message);
     } finally {

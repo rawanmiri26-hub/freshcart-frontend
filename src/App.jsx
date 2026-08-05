@@ -45,10 +45,31 @@ export default function App() {
           </ProtectedRoute>
         }
       >
-        <Route path="dashboard" element={<Dashboard />} />
+        <Route
+          path="dashboard"
+          element={
+            <ProtectedRoute requireAdmin>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
         <Route path="inventory" element={<Inventory />} />
-        <Route path="orders" element={<AdminOrders />} />
-        <Route path="members" element={<Members />} />
+        <Route
+          path="orders"
+          element={
+            <ProtectedRoute requireAdmin>
+              <AdminOrders />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="members"
+          element={
+            <ProtectedRoute requireAdmin>
+              <Members />
+            </ProtectedRoute>
+          }
+        />
       </Route>
     </Routes>
   );

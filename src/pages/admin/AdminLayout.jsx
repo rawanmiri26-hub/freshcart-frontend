@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import './AdminLayout.css';
 
 export default function AdminLayout() {
-  const { user, logout } = useAuth();
+  const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -18,10 +18,10 @@ export default function AdminLayout() {
           FreshCart <span>Admin</span>
         </div>
         <nav className="admin-nav">
-          <NavLink to="/store/dashboard">📊 Dashboard</NavLink>
+          {isAdmin && <NavLink to="/store/dashboard">📊 Dashboard</NavLink>}
           <NavLink to="/store/inventory">📦 Inventory</NavLink>
-          <NavLink to="/store/orders">🛒 Orders</NavLink>
-          <NavLink to="/store/members">👥 Members</NavLink>
+          {isAdmin && <NavLink to="/store/orders">🛒 Orders</NavLink>}
+          {isAdmin && <NavLink to="/store/members">👥 Members</NavLink>}
         </nav>
         <div className="admin-user-box">
           <div>
