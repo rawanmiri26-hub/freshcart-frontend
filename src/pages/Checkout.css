@@ -49,6 +49,10 @@
   background: rgba(82, 183, 136, 0.08);
 }
 
+.checkout-whish-field {
+  margin-top: 16px;
+}
+
 .checkout-confirm-btn {
   width: 100%;
   padding: 16px;

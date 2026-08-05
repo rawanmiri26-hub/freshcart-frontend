@@ -16,6 +16,7 @@ export default function Checkout() {
   const [selectedMethod, setSelectedMethod] = useState(null);
   const [contactPhone, setContactPhone] = useState('');
   const [deliveryAddress, setDeliveryAddress] = useState('');
+  const [whishAccount, setWhishAccount] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -31,6 +32,8 @@ export default function Checkout() {
   }, []);
 
   const total = subtotal + DELIVERY_FEE;
+  const selectedMethodObj = paymentMethods.find((m) => m.id === selectedMethod);
+  const isWhish = selectedMethodObj?.name.toLowerCase().includes('whish');
 
   const handleConfirm = async (e) => {
     e.preventDefault();
@@ -38,6 +41,10 @@ export default function Checkout() {
 
     if (!selectedMethod) {
       setError('Please select a payment option.');
+      return;
+    }
+    if (isWhish && !whishAccount.trim()) {
+      setError('Please enter your Whish Money account number.');
       return;
     }
 
@@ -75,6 +82,7 @@ export default function Checkout() {
         method_id: selectedMethod,
         status_id: paymentStatusId,
         amount: total,
+        account_info: isWhish ? whishAccount.trim() : undefined,
       });
 
       clearCart();
@@ -164,6 +172,19 @@ export default function Checkout() {
                 <p className="page-subtitle">No payment methods configured yet.</p>
               )}
             </div>
+
+            {isWhish && (
+              <div className="form-field checkout-whish-field">
+                <label htmlFor="whish-account">Whish Money account number</label>
+                <input
+                  id="whish-account"
+                  required
+                  value={whishAccount}
+                  onChange={(e) => setWhishAccount(e.target.value)}
+                  placeholder="e.g. 03 123 456"
+                />
+              </div>
+            )}
           </div>
 
           {error && <p className="error-text">{error}</p>}
